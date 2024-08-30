@@ -3,6 +3,15 @@ import argparse
 import gradio as gr
 from dofaker import FaceSwapper, PoseSwapper
 
+import tensorflow as tf
+from os import path
+import warnings,inspect
+warnings.filterwarnings("ignore")
+# https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local
+# 需要cuda 驱动536以下版本 cuda_11.8.0_522.06_windows.exe
+# 设置GPU
+device = "/GPU:0" if tf.config.list_physical_devices('GPU') else "/CPU:0"
+print(device)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='running face swap')
