@@ -13,7 +13,8 @@ class GFPGAN:
         _, model_file = download_file(get_model_url(name),
                                       save_dir=root,
                                       overwrite=False)
-        providers = model_zoo.model_zoo.get_default_providers()
+        # providers = model_zoo.model_zoo.get_default_providers()
+        providers=['CUDAExecutionProvider']
         self.session = model_zoo.model_zoo.PickableInferenceSession(
             model_file, providers=providers)
 

@@ -1,0 +1,15 @@
+{
+    "workbench.editor.languageDetection": true,
+    "cSpell.words": [
+        "dofaker",
+        "gradio",
+        "insightface",
+        "moviepy",
+        "thre",
+        "torchaudio",
+        "torchvision",
+        "yapf"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true
+}

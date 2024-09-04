@@ -4,7 +4,10 @@ The following code references:: https://github.com/deepinsight/insightface
 
 import glob
 import os.path as osp
-
+# import torch
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# print(device)
+# conda install pytorch torchvision torchaudio cudatoolkit=11.8 -c pytorch
 import onnxruntime
 
 from insightface import model_zoo
@@ -12,6 +15,7 @@ from insightface.utils import ensure_available
 from insightface.app.common import Face
 
 from dofaker.utils import download_file, get_model_url
+import insightface as i
 
 __all__ = ['FaceAnalysis']
 
@@ -26,36 +30,39 @@ class FaceAnalysis:
         self.model_dir, _ = download_file(get_model_url(name),
                                           save_dir=root,
                                           overwrite=False)
+        print('model dir:', self.model_dir)
         onnxruntime.set_default_logger_severity(3)
+        print('device:',onnxruntime.get_device())
 
         self.models = {}
-        print(self.model_dir)
+        # print(self.model_dir)
         onnx_files = glob.glob(osp.join(self.model_dir, '*.onnx'))
         onnx_files = sorted(onnx_files)
         for onnx_file in onnx_files:
             model = model_zoo.get_model(onnx_file, **kwargs)
             if model is None:
-                print('model not recognized:', onnx_file)
+                raise RuntimeError('model not recognized:{}'.format(onnx_file))
             elif allowed_modules is not None and model.taskname not in allowed_modules:
                 print('model ignore:', onnx_file, model.taskname)
                 del model
-            elif model.taskname not in self.models and (allowed_modules is None
+            elif model.taskname not in self.models.keys() and (allowed_modules is None
                                                         or model.taskname
                                                         in allowed_modules):
-                print('find model:', onnx_file, model.taskname,
-                      model.input_shape, model.input_mean, model.input_std)
+                print('find model:', onnx_file, model.taskname, model.input_shape, model.input_mean, model.input_std)
                 self.models[model.taskname] = model
             else:
                 print('duplicated model task type, ignore:', onnx_file,
                       model.taskname)
                 del model
-        assert 'detection' in self.models
+        assert 'detection' in self.models.keys() ,"detection model load error"
         self.det_model = self.models['detection']
+        
 
     def prepare(self, ctx_id, det_thresh=0.5, det_size=(640, 640)):
         self.det_thresh = det_thresh
         assert det_size is not None, "det_size can't be None."
         self.det_size = det_size
+
         for taskname, model in self.models.items():
             if taskname == 'detection':
                 model.prepare(ctx_id,
@@ -63,7 +70,7 @@ class FaceAnalysis:
                               det_thresh=det_thresh)
             else:
                 model.prepare(ctx_id)
-
+        # del self.models #用完删除 节约内存
     def get(self, img, max_num=0):
         bboxes, kpss = self.det_model.detect(img,
                                              max_num=max_num,

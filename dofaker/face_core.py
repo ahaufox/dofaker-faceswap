@@ -26,6 +26,7 @@ class FaceSwapper:
                  use_enhancer=True,
                  use_sr=True,
                  scale=1):
+        
         self.face_sim_thre = face_sim_thre
         self.log_iters = log_iters
 
@@ -131,21 +132,23 @@ class FaceSwapper:
                    src_face_paths,
                    output_dir='output'):
         os.makedirs(output_dir, exist_ok=True)
-        src_faces = self.get_faces(src_face_paths)
+        # src_faces = self.get_faces(src_face_paths)
         if dst_face_paths is not None:
             dst_faces = self.get_faces(dst_face_paths)
             dst_face_embeddings = self.get_faces_embeddings(dst_faces)
             assert len(dst_faces) == len(
-                src_faces
+                self.get_faces(src_face_paths)
             ), 'The detected faces in source images not equal target image faces.'
 
         image = cv2.imread(image_path)
         if dst_face_paths is not None:
             swapped_image = self.swap_faces(image,
                                             dst_face_embeddings,
-                                            src_faces=src_faces)
+                                            src_faces=self.get_faces(src_face_paths))
         else:
-            swapped_image = self.swap_all_faces(image, src_faces=src_faces)
+            swapped_image = self.swap_all_faces(image, src_faces=self.get_faces(src_face_paths))
+            # new add
+            # del src_faces
         base_name = os.path.basename(image_path)
         save_path = os.path.join(output_dir, base_name)
         cv2.imwrite(save_path, swapped_image)
@@ -162,6 +165,8 @@ class FaceSwapper:
     def get_faces(self, image_paths):
         if isinstance(image_paths, str):
             image_paths = [image_paths]
+        if image_paths is None:
+            raise ValueError('The image_paths is None, please check your input.')
         faces = []
         for image_path in image_paths:
             image = cv2.imread(image_path)
@@ -173,6 +178,8 @@ class FaceSwapper:
             ) == 1, 'The detected face in image {} must be 1, but got {}, please ensure your image including one face.'.format(
                 image_path, len(img_faces))
             faces += img_faces
+        # new add
+        del img_faces
         return faces
 
     def swap_faces(self, image, dst_face_embeddings: np.ndarray,
@@ -218,6 +225,8 @@ class FaceSwapper:
                 res = self.face_enhance.get(res, image_face, paste_back=True)
         if self.sr is not None:
             res = self.sr.get(res, image_format='bgr')
+        #     new add
+        del self.sr
         return res
 
     def get_faces_embeddings(self, faces):

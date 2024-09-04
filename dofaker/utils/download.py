@@ -6,6 +6,9 @@ from tqdm import tqdm
 
 
 def download_file(url: str, save_dir='./', overwrite=False, unzip=True):
+    """
+    :return: 模型保存地址，文件夹地址
+    """
     os.makedirs(save_dir, exist_ok=True)
     file_name = url.split('/')[-1]
     file_path = os.path.join(save_dir, file_name)
@@ -16,7 +19,6 @@ def download_file(url: str, save_dir='./', overwrite=False, unzip=True):
         print('Downloading file {} from {}...'.format(file_path, url))
 
         r = requests.get(url, stream=True)
-        print(r.status_code)
         if r.status_code != 200:
             raise RuntimeError('Failed downloading url {}!'.format(url))
         total_length = r.headers.get('content-length')

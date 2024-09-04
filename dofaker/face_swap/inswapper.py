@@ -17,6 +17,7 @@ class InSwapper(BaseSwapper):
                                       save_dir=root,
                                       overwrite=False)
         providers = model_zoo.model_zoo.get_default_providers()
+        print('默认providers:', providers)
         self.session = model_zoo.model_zoo.PickableInferenceSession(
             model_file, providers=providers)
 
@@ -26,7 +27,7 @@ class InSwapper(BaseSwapper):
         self.input_mean = 0.0
         self.input_std = 255.0
 
-        inputs = self.session.get_inputs()
+        inputs = self.session.get_inputs() # 从session中获取输入图片
         self.input_names = []
         for inp in inputs:
             self.input_names.append(inp.name)
