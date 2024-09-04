@@ -3,15 +3,14 @@ import argparse
 import gradio as gr
 from dofaker import FaceSwapper, PoseSwapper
 
-import tensorflow as tf
 from os import path
 import warnings,inspect
 warnings.filterwarnings("ignore")
 # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local
 # 需要cuda 驱动536以下版本 cuda_11.8.0_522.06_windows.exe
 # 设置GPU
-device = "/GPU:0" if tf.config.list_physical_devices('GPU') else "/CPU:0"
-print(device)
+# device = "/GPU:0" if tf.config.list_physical_devices('GPU') else "/CPU:0"
+# print(device)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='running face swap')
@@ -33,6 +32,18 @@ def parse_args():
 
 def swap_face(input_path, dst_path, src_path, use_enhancer, use_sr, scale,
               face_sim_thre):
+    """
+    :param input_path: input image path
+    :param dst_path: output image path
+    :param src_path: source image path
+    :param use_enhancer: whether to use enhancer
+    :param use_sr: whether to use super resolution
+    :param scale: scale of the output image
+    :param face_sim_thre: threshold of face similarity
+    :return: output image path
+    """
+    if input_path is None or dst_path is None or src_path is None:
+        raise ValueError('Input path, dst path and src path cannot be None')
     faker = FaceSwapper(use_enhancer=use_enhancer,
                         use_sr=use_sr,
                         scale=scale,
@@ -196,8 +207,11 @@ def main():
             #                                 outputs=[output_video],
             #                                 api_name='video swap')
 
-    web_ui.launch(inbrowser=args.inbrowser, server_port=args.server_port)
+    web_ui.launch(inbrowser=args.inbrowser, server_port=args.server_port,)
 
 
 if __name__ == '__main__':
+    # conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+    # conda install moviepy gradio insightface flake8 yapf
+
     main()

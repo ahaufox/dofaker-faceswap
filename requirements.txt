@@ -1,5 +1,5 @@
 moviepy
-gradio>=4.8
+gradio
 insightface
 flake8
 yapf
